@@ -34,7 +34,7 @@ func ({{.ModelSign}} *{{.ModelName}}) FindOne() (err error) {
 	return
 }
 
-func ({{.ModelSign}} *{{.ModelName}}) Find() ({{.ModelSign}}s []{{.ModelName}}, err error) {
+func ({{.ModelSign}} {{.ModelName}}) Find() ({{.ModelSign}}s []{{.ModelName}}, err error) {
 	ctx := NewContext()
 	var cur *mongo.Cursor
 	cur, err = DB.Collection("{{.TableName}}").Find(ctx, bson.D{})
