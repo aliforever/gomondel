@@ -10,8 +10,10 @@ import (
 func main() {
 	var init string
 	var model string
+	var modelParent string
 	flag.StringVar(&init, "init", "", "--init=database_name")
 	flag.StringVar(&model, "model", "", "--model=ModelName")
+	flag.StringVar(&modelParent, "parent", "", "--parent=ParentModelName")
 	flag.Parse()
 	if init != "" && model != "" {
 		fmt.Println("You can't run init and model at the same time")
@@ -27,7 +29,11 @@ func main() {
 		return
 	}
 	if model != "" {
-		path, err := CreateModel(model)
+		var parent *string
+		if modelParent != "" {
+			parent = &modelParent
+		}
+		path, err := CreateModel(model, parent)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -45,8 +51,8 @@ func InitDatabase(dbName string) (path string, err error) {
 	return
 }
 
-func CreateModel(modelName string) (path string, err error) {
+func CreateModel(modelName string, parentName *string) (path string, err error) {
 	t := templates.Template{}
-	path, err = t.CreateModel(modelName)
+	path, err = t.CreateModel(modelName, parentName)
 	return
 }

@@ -1,2 +1,5 @@
 .idea
 *.exe
+temp.go
+*.tmp
+_test.go
