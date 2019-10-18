@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"strings"
 
 	"github.com/aliforever/gomondel/templates"
 )
@@ -12,8 +13,8 @@ func main() {
 	var model string
 	var modelParent string
 	flag.StringVar(&init, "init", "", "--init=database_name")
-	flag.StringVar(&model, "model", "", "--model=ModelName")
-	flag.StringVar(&modelParent, "parent", "", "--parent=ParentModelName")
+	flag.StringVar(&model, "model", "", "--model=model_name")
+	flag.StringVar(&modelParent, "parent", "", "--parent=parent_model_name[,int]")
 	flag.Parse()
 	if init != "" && model != "" {
 		fmt.Println("You can't run init and model at the same time")
@@ -30,10 +31,16 @@ func main() {
 	}
 	if model != "" {
 		var parent *string
+		var parentKeyType *string
 		if modelParent != "" {
-			parent = &modelParent
+			split := strings.Split(modelParent, ",")
+			if len(split) == 2 {
+				parentKeyType = &split[1]
+			}
+			parent = &split[0]
 		}
-		path, err := CreateModel(model, parent)
+
+		path, err := CreateModel(model, parent, parentKeyType)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -51,8 +58,8 @@ func InitDatabase(dbName string) (path string, err error) {
 	return
 }
 
-func CreateModel(modelName string, parentName *string) (path string, err error) {
+func CreateModel(modelName string, parentName, parentKeyType *string) (path string, err error) {
 	t := templates.Template{}
-	path, err = t.CreateModel(modelName, parentName)
+	path, err = t.CreateModel(modelName, parentName, parentKeyType)
 	return
 }

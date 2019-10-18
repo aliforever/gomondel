@@ -1,13 +1,11 @@
 package templates
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
-	"text/template"
 	"unicode"
 
 	"github.com/go-errors/errors"
@@ -44,20 +42,28 @@ func (t *Template) Init(dbName string) (path string, err error) {
 	return
 }
 
-func (t *Template) CreateModel(modelName string, parentName *string) (path string, err error) {
+func (t *Template) getSignFromName(name string) (sign string) {
+	r := []rune(name)
+	for i := 0; i < len(r); i++ {
+		ch := r[i]
+		if unicode.IsUpper(ch) {
+			sign += string(unicode.ToLower(ch))
+		}
+	}
+	return
+}
+
+func (t *Template) CreateModel(modelName string, parentName, parentKeyType *string) (path string, err error) {
 	path, err = t.CurrentPath()
 	if err != nil {
 		return
 	}
 	fileName := flect.Singularize(modelName)
 	fileName = flect.Capitalize(fileName)
-	modelSign := ""
-	r := []rune(fileName)
-	for i := 0; i < len(r); i++ {
-		ch := r[i]
-		if unicode.IsUpper(ch) {
-			modelSign += string(unicode.ToLower(ch))
-		}
+	modelSign := t.getSignFromName(fileName)
+	parentKey := ""
+	if parentKeyType != nil {
+		parentKey = *parentKeyType
 	}
 	parentMethodStr := ""
 	parentField := ""
@@ -69,48 +75,17 @@ func (t *Template) CreateModel(modelName string, parentName *string) (path strin
 		} else {
 			parentModelName := flect.Singularize(*parentName)
 			parentModelName = flect.Capitalize(parentModelName)
-			parentModelSign := ""
-			r := []rune(parentModelName)
-			for i := 0; i < len(r); i++ {
-				ch := r[i]
-				if unicode.IsUpper(ch) {
-					parentModelSign += string(unicode.ToLower(ch))
-				}
-			}
-			var tpl, tplField bytes.Buffer
-			type ParentData struct {
-				ModelSign       string
-				ModelName       string
-				ParentModelName string
-				ParentModelSign string
-			}
+			parentModelSign := t.getSignFromName(parentModelName)
 			parentMethod := t.parentMethod()
-			data := ParentData{ModelName: fileName, ModelSign: modelSign, ParentModelName: parentModelName, ParentModelSign: parentModelSign}
-			var tmpl *template.Template
-			tmpl, err = template.New("model").Parse(parentMethod)
+			parentMethodStr, err = TemplateData{}.FillModelParentMethod(parentMethod, modelSign, modelName, parentModelName, parentModelSign)
 			if err != nil {
 				return
-			}
-			err = tmpl.Execute(&tpl, data)
-			if err != nil {
-				return
-			}
-			parentMethodStr = tpl.String()
-			type ParentFieldData struct {
-				ParentModelName      string
-				ParentModelNameSmall string
 			}
 			field := t.parentField()
-			fieldData := ParentFieldData{ParentModelName: parentModelName, ParentModelNameSmall: strings.ToLower(flect.Underscore(parentModelName))}
-			tmpl, err = template.New("field").Parse(field)
+			parentField, err = TemplateData{}.FillModelParentField(field, parentModelName, parentKey)
 			if err != nil {
 				return
 			}
-			err = tmpl.Execute(&tplField, fieldData)
-			if err != nil {
-				return
-			}
-			parentField = tplField.String()
 		}
 	}
 	fileString := t.model()
@@ -126,29 +101,13 @@ func (t *Template) CreateModel(modelName string, parentName *string) (path strin
 	}
 
 	path = fmt.Sprintf(ModelsPath, path) + "/" + strings.ToLower(fileName) + ".go"
-	type Data struct {
-		FileName             string
-		ModelName            string
-		ModelSign            string
-		TableName            string
-		ParentMethod         string
-		ParentModelName      string
-		ParentModelNameSmall string
-		ParentField          string
-	}
 
 	tableName := strings.ToLower(flect.Underscore(flect.Pluralize(fileName)))
-	data := Data{FileName: fileName, ModelName: fileName, ModelSign: modelSign, TableName: tableName, ParentMethod: parentMethodStr, ParentField: parentField}
-	tmpl, err := template.New("model").Parse(fileString)
+	fileString, err = TemplateData{}.FillModel(fileString, fileName, fileName, modelSign, tableName, parentMethodStr, parentField)
 	if err != nil {
 		return
 	}
-	var tpl bytes.Buffer
-	err = tmpl.Execute(&tpl, data)
-	if err != nil {
-		return
-	}
-	err = ioutil.WriteFile(path, tpl.Bytes(), os.ModePerm)
+	err = ioutil.WriteFile(path, []byte(fileString), os.ModePerm)
 	if err == nil {
 		err = t.GoFmtCurrentPath()
 	}
@@ -161,7 +120,7 @@ func (t *Template) GoFmtCurrentPath() (err error) {
 	if err != nil {
 		return
 	}
-	cmd := exec.Command("go", "fmt", path+"/...")
+	cmd := exec.Command("go", "fmt", path+"/", "./...")
 	err = cmd.Run()
 	return
 }

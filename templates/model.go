@@ -8,7 +8,7 @@ func (t *Template) parentMethod() string {
 }
 
 func (t *Template) parentField() string {
-	return `{{.ParentModelName}}Id primitive.ObjectID ` + "`" + `bson:"{{.ParentModelNameSmall}}_id"` + "`"
+	return `{{.ParentModelName}}Id {{.ParentKeyType}} ` + "`" + `bson:"{{.ParentModelNameSmall}}_id"` + "`"
 }
 
 func (t *Template) model() string {
