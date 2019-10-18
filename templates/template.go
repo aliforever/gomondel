@@ -53,7 +53,7 @@ func (t *Template) getSignFromName(name string) (sign string) {
 	return
 }
 
-func (t *Template) CreateModel(modelName string, parentName, parentKeyType *string) (path string, err error) {
+func (t *Template) CreateModel(modelName string, modelIdType, parentName, parentIdType *string) (path string, err error) {
 	path, err = t.CurrentPath()
 	if err != nil {
 		return
@@ -62,30 +62,39 @@ func (t *Template) CreateModel(modelName string, parentName, parentKeyType *stri
 	fileName = flect.Capitalize(fileName)
 	modelSign := t.getSignFromName(fileName)
 	parentKey := ""
-	if parentKeyType != nil {
-		parentKey = *parentKeyType
+	if parentIdType != nil {
+		parentKey = *parentIdType
+	}
+	modelKey := ""
+	if modelIdType != nil {
+		modelKey = *modelIdType
 	}
 	parentMethodStr := ""
+	parentChildMethods := ""
 	parentField := ""
+	parent := ""
+	parentModelName := ""
 	if parentName != nil {
-		parent := fmt.Sprintf(ModelsPath, path) + "/" + *parentName + ".go"
+		parent = fmt.Sprintf(ModelsPath, path) + "/" + *parentName + ".go"
 		if _, err = os.Stat(parent); err != nil {
 			err = errors.New(fmt.Sprintf("%s %s", parent, err.Error()))
 			return
 		} else {
-			parentModelName := flect.Singularize(*parentName)
+			parentModelName = flect.Singularize(*parentName)
 			parentModelName = flect.Capitalize(parentModelName)
 			parentModelSign := t.getSignFromName(parentModelName)
-			parentMethod := t.parentMethod()
+			parentMethod := t.modelParentMethod()
 			parentMethodStr, err = TemplateData{}.FillModelParentMethod(parentMethod, modelSign, modelName, parentModelName, parentModelSign)
 			if err != nil {
 				return
 			}
-			field := t.parentField()
+			field := t.modelParentField()
 			parentField, err = TemplateData{}.FillModelParentField(field, parentModelName, parentKey)
 			if err != nil {
 				return
 			}
+			parentChildMethods = t.parentChildMethods()
+			parentChildMethods, err = TemplateData{}.FillParentChildMethods(parentChildMethods, parent, modelName, modelSign, modelKey, parentModelSign, parentModelName)
 		}
 	}
 	fileString := t.model()
@@ -103,14 +112,27 @@ func (t *Template) CreateModel(modelName string, parentName, parentKeyType *stri
 	path = fmt.Sprintf(ModelsPath, path) + "/" + strings.ToLower(fileName) + ".go"
 
 	tableName := strings.ToLower(flect.Underscore(flect.Pluralize(fileName)))
-	fileString, err = TemplateData{}.FillModel(fileString, fileName, fileName, modelSign, tableName, parentMethodStr, parentField)
+	fileString, err = TemplateData{}.FillModel(fileString, fileName, fileName, modelSign, "", modelKey, tableName, parentMethodStr, parentField)
 	if err != nil {
 		return
 	}
 	err = ioutil.WriteFile(path, []byte(fileString), os.ModePerm)
-	if err == nil {
-		err = t.GoFmtCurrentPath()
+	if err != nil {
+		return
 	}
+	if parent != "" && parentModelName != "" && parentChildMethods != "" {
+		var parentFile []byte
+		parentFile, err = ioutil.ReadFile(parent)
+		if err != nil {
+			return
+		}
+		parentFile = append(parentFile, []byte("\n\n"+parentChildMethods)...)
+		err = ioutil.WriteFile(parent, parentFile, os.ModePerm)
+		if err != nil {
+			return
+		}
+	}
+	err = t.GoFmtCurrentPath()
 	return
 }
 

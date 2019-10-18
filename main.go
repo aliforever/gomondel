@@ -13,7 +13,7 @@ func main() {
 	var model string
 	var modelParent string
 	flag.StringVar(&init, "init", "", "--init=database_name")
-	flag.StringVar(&model, "model", "", "--model=model_name")
+	flag.StringVar(&model, "model", "", "--model=model_name[,int]")
 	flag.StringVar(&modelParent, "parent", "", "--parent=parent_model_name[,int]")
 	flag.Parse()
 	if init != "" && model != "" {
@@ -31,16 +31,22 @@ func main() {
 	}
 	if model != "" {
 		var parent *string
-		var parentKeyType *string
+		var keyType *string
+		var parentIdType *string
+		split := strings.Split(model, ",")
+		if len(split) == 2 {
+			keyType = &split[1]
+		}
+		model = split[0]
 		if modelParent != "" {
 			split := strings.Split(modelParent, ",")
 			if len(split) == 2 {
-				parentKeyType = &split[1]
+				parentIdType = &split[1]
 			}
 			parent = &split[0]
 		}
 
-		path, err := CreateModel(model, parent, parentKeyType)
+		path, err := CreateModel(model, keyType, parent, parentIdType)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -48,8 +54,6 @@ func main() {
 		fmt.Println(fmt.Sprintf("Model %s file added in %s", model, path))
 		return
 	}
-	//fmt.Println(flect.Underscore("UserForm"))
-	//models.InitMongoDB()
 }
 
 func InitDatabase(dbName string) (path string, err error) {
@@ -58,8 +62,8 @@ func InitDatabase(dbName string) (path string, err error) {
 	return
 }
 
-func CreateModel(modelName string, parentName, parentKeyType *string) (path string, err error) {
+func CreateModel(modelName string, modelIdType, parentName, parentIdType *string) (path string, err error) {
 	t := templates.Template{}
-	path, err = t.CreateModel(modelName, parentName, parentKeyType)
+	path, err = t.CreateModel(modelName, modelIdType, parentName, parentIdType)
 	return
 }

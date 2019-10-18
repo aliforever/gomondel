@@ -1,14 +1,36 @@
 package templates
 
-func (t *Template) parentMethod() string {
+func (t *Template) modelParentMethod() string {
 	return `func ({{.ModelSign}} {{.ModelName}}) {{.ParentModelName}}() ({{.ParentModelSign}} *{{.ParentModelName}}, err error) {
 	{{.ParentModelSign}}, err = {{.ParentModelName}}{}.FindById({{.ModelSign}}.{{.ParentModelName}}Id)
 	return
 }`
 }
 
-func (t *Template) parentField() string {
-	return `{{.ParentModelName}}Id {{.ParentKeyType}} ` + "`" + `bson:"{{.ParentModelNameSmall}}_id"` + "`"
+func (t *Template) parentChildMethods() string {
+	return `func ({{.ParentModelSign}} {{.ParentModelName}}) {{.ModelNameChild}}FindById(id {{.ModelIdType}}) ({{.ModelSign}} *{{.ModelName}}, err error) {
+{{.ModelSign}}, err = {{.ModelName}}{}.FindById(id)
+return
+}
+
+func ({{.ParentModelSign}} {{.ParentModelName}}) {{.ModelNameChild}}FindOneWithFilter(filter bson.M) ({{.ModelSign}} *{{.ModelName}}, err error) {
+{{.ModelSign}}, err = {{.ModelName}}{}.FindOneWithFilter(filter)
+return
+}
+
+func ({{.ParentModelSign}} {{.ParentModelName}}) {{.ModelNameChildPlural}}() ({{.ModelSign}}s []{{.ModelName}}, err error) {
+{{.ModelSign}}s, err = {{.ModelName}}{}.Find()
+return
+}
+
+func ({{.ParentModelSign}} {{.ParentModelName}}) {{.ModelNameChildPlural}}WithFilter(filter bson.M) ({{.ModelSign}}s []{{.ModelName}}, err error) {
+{{.ModelSign}}s, err = {{.ModelName}}{}.FindWithFilter(filter)
+return
+}`
+}
+
+func (t *Template) modelParentField() string {
+	return `{{.ParentModelName}}Id {{.ParentModelIdType}} ` + "`" + `bson:"{{.ParentModelNameSmall}}_id"` + "`"
 }
 
 func (t *Template) model() string {
@@ -21,12 +43,12 @@ import (
 )
 
 type {{.ModelName}} struct {
-	Id primitive.ObjectID ` + "`" + `bson:"_id,omitempty"` + "`" + `
+	{{.ModelId}} {{.ModelIdType}} ` + "`" + `bson:"_id,omitempty"` + "`" + `
 	{{.ParentField}}
 }
 
-func ({{.ModelSign}} {{.ModelName}}) New() (n{{.ModelSign}} *{{.ModelName}}, err error) {
-	n{{.ModelSign}} = &{{.ModelName}}{Id: primitive.NewObjectID()}
+func ({{.ModelSign}} {{.ModelName}}) New({{if .CustomModelId}}{{.ModelIdSmall}} {{.ModelIdType}}{{end}}) (n{{.ModelSign}} *{{.ModelName}}, err error) {
+	n{{.ModelSign}} = &{{.ModelName}}{Id: {{.ModelIdDefaultValue}}}
 	_, err = DB.Collection("{{.TableName}}").InsertOne(NewContext(), &n{{.ModelSign}})
 	return
 }
@@ -41,7 +63,7 @@ func ({{.ModelSign}} {{.ModelName}}) CreateCustom(query bson.M) (err error) {
 	return
 }
 
-func ({{.ModelSign}} {{.ModelName}}) FindById(id primitive.ObjectID) (f{{.ModelSign}} *{{.ModelName}}, err error) {
+func ({{.ModelSign}} {{.ModelName}}) FindById(id {{.ModelIdType}}) (f{{.ModelSign}} *{{.ModelName}}, err error) {
 	err = DB.Collection("{{.TableName}}").FindOne(NewContext(), bson.M{"_id": id}).Decode(&f{{.ModelSign}})
 	return
 }
