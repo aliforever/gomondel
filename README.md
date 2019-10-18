@@ -2,6 +2,7 @@
 Golang MongoDB Model Generator with CRUD
 
 [![gomondel](http://i3.ytimg.com/vi/I1ncw9C696E/maxresdefault.jpg)](https://www.youtube.com/watch?v=I1ncw9C696E&)
+watch on youtube
 
 ## Description
 
