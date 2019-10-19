@@ -1,6 +1,9 @@
 # gomondel
 Golang MongoDB Model Generator with CRUD
 
+[![gomondel](http://i3.ytimg.com/vi/I1ncw9C696E/maxresdefault.jpg)](https://www.youtube.com/watch?v=I1ncw9C696E&)
+watch on youtube
+
 ## Description
 
 Create ready-to-go models when working with the [Official Go Driver for MongoDB](https://github.com/mongodb/mongo-go-driver) including CRUD Operations (Create, Read, Update, Delete).
