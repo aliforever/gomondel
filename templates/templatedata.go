@@ -113,11 +113,14 @@ func (td TemplateData) FillParentChildMethods(content string, fileName, modelNam
 	if len(split) == 2 {
 		td.ModelNameChild = flect.Pascalize(split[1])
 	}
-	td.ModelNameChildPlural = flect.Pluralize(td.ModelNameChild)
+	td.ModelNameChildPlural = flect.Pascalize(flect.Pluralize(td.ModelNameChild))
 	td.ModelSign = modelSign
 	td.ParentModelSign = parentModelSign
 	td.ParentModelName = parentModelName
 	td.ModelIdType = modelIdType
+	if td.ModelIdType == "" {
+		td.ModelIdType = "primitive.ObjectID"
+	}
 	var (
 		tmpl *template.Template
 		bf   bytes.Buffer
