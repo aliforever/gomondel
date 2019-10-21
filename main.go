@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aliforever/gomondel/templates"
+	"github.com/aliforever/gomondel/funcs"
 )
 
 func main() {
-	var init string
-	var model string
-	var modelParent string
+	var init, model, modelParent, path string
 	flag.StringVar(&init, "init", "", "--init=database_name")
+	flag.StringVar(&path, "path", "", "--path=/home/go/src/project_name")
 	flag.StringVar(&model, "model", "", "--model=model_name[,int]")
 	flag.StringVar(&modelParent, "parent", "", "--parent=parent_model_name[,int]")
 	flag.Parse()
@@ -21,7 +20,7 @@ func main() {
 		return
 	}
 	if init != "" {
-		path, err := InitDatabase(init)
+		path, err := funcs.InitDatabase(path, init)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -46,7 +45,7 @@ func main() {
 			parent = &split[0]
 		}
 
-		path, err := CreateModel(model, keyType, parent, parentIdType)
+		path, err := funcs.CreateModel(path, model, keyType, parent, parentIdType)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -54,16 +53,4 @@ func main() {
 		fmt.Println(fmt.Sprintf("Model %s file added in %s", model, path))
 		return
 	}
-}
-
-func InitDatabase(dbName string) (path string, err error) {
-	t := templates.Template{}
-	path, err = t.Init(dbName)
-	return
-}
-
-func CreateModel(modelName string, modelIdType, parentName, parentIdType *string) (path string, err error) {
-	t := templates.Template{}
-	path, err = t.CreateModel(modelName, modelIdType, parentName, parentIdType)
-	return
 }

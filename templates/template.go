@@ -18,10 +18,21 @@ var ModelsPath = "%s/models"
 type Template struct {
 }
 
-func (t *Template) Init(dbName string) (path string, err error) {
-	path, err = t.CurrentPath()
-	if err != nil {
-		return
+func (t Template) Init(projectPath, dbName string) (path string, err error) {
+	if projectPath != "" {
+		path = projectPath
+		_, err = os.Stat(path)
+		if err != nil {
+			if os.IsNotExist(err) {
+				err = errors.New(fmt.Sprintf("Path %s does not exists", projectPath))
+			}
+			return
+		}
+	} else {
+		path, err = t.CurrentPath()
+		if err != nil {
+			return
+		}
 	}
 	fileString := t.init(dbName)
 	if _, err = os.Stat(fmt.Sprintf(ModelsPath, path)); err != nil {
@@ -42,7 +53,7 @@ func (t *Template) Init(dbName string) (path string, err error) {
 	return
 }
 
-func (t *Template) getSignFromName(name string) (sign string) {
+func (t Template) getSignFromName(name string) (sign string) {
 	r := []rune(name)
 	for i := 0; i < len(r); i++ {
 		ch := r[i]
@@ -53,10 +64,21 @@ func (t *Template) getSignFromName(name string) (sign string) {
 	return
 }
 
-func (t *Template) CreateModel(modelName string, modelIdType, parentName, parentIdType *string) (path string, err error) {
-	path, err = t.CurrentPath()
-	if err != nil {
-		return
+func (t Template) CreateModel(projectPath, modelName string, modelIdType, parentName, parentIdType *string) (path string, err error) {
+	if projectPath != "" {
+		path = projectPath
+		_, err = os.Stat(path)
+		if err != nil {
+			if os.IsNotExist(err) {
+				err = errors.New(fmt.Sprintf("Path %s does not exists", projectPath))
+			}
+			return
+		}
+	} else {
+		path, err = t.CurrentPath()
+		if err != nil {
+			return
+		}
 	}
 	fileName := flect.Singularize(modelName)
 	fileName = flect.Capitalize(fileName)
@@ -136,7 +158,7 @@ func (t *Template) CreateModel(modelName string, modelIdType, parentName, parent
 	return
 }
 
-func (t *Template) GoFmtCurrentPath() (err error) {
+func (t Template) GoFmtCurrentPath() (err error) {
 	var path string
 	path, err = t.CurrentPath()
 	if err != nil {
