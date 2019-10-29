@@ -26,6 +26,13 @@ type TemplateData struct {
 	TableName            string
 	ParentMethod         string
 	ParentField          string
+	ModelFields          []ModelField
+}
+
+type ModelField struct {
+	Name string
+	Type string
+	Tag  string
 }
 
 func (td TemplateData) FillModelParentMethod(content string, modelSign, modelName, parentModelName, parentModelSign string) (result string, err error) {
@@ -73,7 +80,7 @@ func (td TemplateData) FillModelParentField(content string, parentModelName, par
 	return
 }
 
-func (td TemplateData) FillModel(content string, fileName, modelName, modelSign, modelId, modelIdType, tableName, parentMethod, parentField string) (result string, err error) {
+func (td TemplateData) FillModel(content string, fileName, modelName, modelSign, modelId, modelIdType, tableName, parentMethod, parentField string, fields []ModelField) (result string, err error) {
 	td.ModelId = "Id"
 	td.ModelIdDefaultValue = "primitive.NewObjectID()"
 	td.ModelIdType = "primitive.ObjectID"
@@ -89,6 +96,7 @@ func (td TemplateData) FillModel(content string, fileName, modelName, modelSign,
 	td.TableName = tableName
 	td.ParentMethod = parentMethod
 	td.ParentField = parentField
+	td.ModelFields = fields
 	var (
 		tmpl *template.Template
 		bf   bytes.Buffer

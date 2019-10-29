@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -64,7 +65,7 @@ func (t Template) getSignFromName(name string) (sign string) {
 	return
 }
 
-func (t Template) CreateModel(projectPath, modelName string, modelIdType, parentName, parentIdType *string) (path string, err error) {
+func (t Template) CreateModel(projectPath, modelName string, modelIdType, parentName, parentIdType *string, fields []ModelField) (path string, err error) {
 	if projectPath != "" {
 		path = projectPath
 		_, err = os.Stat(path)
@@ -134,7 +135,7 @@ func (t Template) CreateModel(projectPath, modelName string, modelIdType, parent
 	path = fmt.Sprintf(ModelsPath, path) + "/" + strings.ToLower(fileName) + ".go"
 
 	tableName := strings.ToLower(flect.Underscore(flect.Pluralize(fileName)))
-	fileString, err = TemplateData{}.FillModel(fileString, fileName, fileName, modelSign, "", modelKey, tableName, parentMethodStr, parentField)
+	fileString, err = TemplateData{}.FillModel(fileString, fileName, fileName, modelSign, "", modelKey, tableName, parentMethodStr, parentField, fields)
 	if err != nil {
 		return
 	}
@@ -159,13 +160,36 @@ func (t Template) CreateModel(projectPath, modelName string, modelIdType, parent
 }
 
 func (t Template) GoFmtCurrentPath() (err error) {
+
 	var path string
 	path, err = t.CurrentPath()
 	if err != nil {
 		return
 	}
 	cmd := exec.Command("go", "fmt", path+"/", "./...")
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
 	err = cmd.Run()
+	if err != nil {
+		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		return
+	}
+	return
+}
+
+func (t Template) GoFmtPath(path string) (err error) {
+	cmd := exec.Command("go", "fmt", path+"/", "./...")
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
+	err = cmd.Run()
+	if err != nil {
+		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		return
+	}
 	return
 }
 

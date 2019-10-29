@@ -44,7 +44,12 @@ import (
 
 type {{.ModelName}} struct {
 	{{.ModelId}} {{.ModelIdType}} ` + "`" + `bson:"_id,omitempty"` + "`" + `
-	{{.ParentField}}
+	{{- if .ParentField}}\n{{.ParentField}}{{end -}}
+	{{if .ModelFields}}
+	{{- range $element := .ModelFields}}
+	{{$element.Name}} {{$element.Type}} {{$element.Tag -}}
+	{{- end}}
+	{{- end}}
 }
 
 func ({{.ModelSign}} {{.ModelName}}) New({{if .CustomModelId}}{{.ModelIdSmall}} {{.ModelIdType}}{{end}}) (n{{.ModelSign}} *{{.ModelName}}, err error) {
@@ -135,7 +140,12 @@ func ({{.ModelSign}} *{{.ModelName}}) Save() (err error) {
 }
 
 func ({{.ModelSign}} *{{.ModelName}}) SaveCustom(query bson.M) (err error) {
-	_, err = DB.Collection("{{.TableName}}").UpdateOne(NewContext(), bson.M{"_id": {{.ModelSign}}.Id}, query)
+	_, err = DB.Collection("{{.TableName}}").UpdateOne(NewContext(), bson.M{"_id": {{.ModelSign}}.Id}, bson.M{"$set": query})
+	return
+}
+
+func ({{.ModelSign}} *{{.ModelName}}) SaveField(field string, val interface{}) (err error) {
+	_, err = DB.Collection("{{.TableName}}").UpdateOne(NewContext(), bson.M{"_id": {{.ModelSign}}.Id}, bson.M{"$set": bson.M{field: val}})
 	return
 }
 

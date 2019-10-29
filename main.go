@@ -6,13 +6,15 @@ import (
 	"strings"
 
 	"github.com/aliforever/gomondel/funcs"
+	"github.com/aliforever/gomondel/templates"
 )
 
 func main() {
-	var init, model, modelParent, path string
+	var init, model, modelParent, path, fields string
 	flag.StringVar(&init, "init", "", "--init=database_name")
 	flag.StringVar(&path, "path", "", "--path=/home/go/src/project_name")
 	flag.StringVar(&model, "model", "", "--model=model_name[,int]")
+	flag.StringVar(&fields, "fields", "", "--fields=username,string-password,string")
 	flag.StringVar(&modelParent, "parent", "", "--parent=parent_model_name[,int]")
 	flag.Parse()
 	if init != "" && model != "" {
@@ -44,8 +46,24 @@ func main() {
 			}
 			parent = &split[0]
 		}
-
-		path, err := funcs.CreateModel(path, model, keyType, parent, parentIdType)
+		var modelFields []templates.ModelField
+		if fields != "" {
+			splitFields := strings.Split(fields, "-")
+			m := map[string]string{}
+			for _, field := range splitFields {
+				splitFieldType := strings.Split(field, ",")
+				if len(splitFieldType) != 2 {
+					fmt.Println("invalid fields argument")
+					return
+				}
+				fieldName := splitFieldType[0]
+				fieldType := splitFieldType[1]
+				// fieldTag := fmt.Sprintf("`"+`bson:"%s"`+"`", flect.Underscore(fieldName))
+				m[fieldName] = fieldType
+			}
+			modelFields = funcs.MakeModelFieldsFromMap(m)
+		}
+		path, err := funcs.CreateModel(path, model, keyType, parent, parentIdType, modelFields)
 		if err != nil {
 			fmt.Println(err)
 			return
