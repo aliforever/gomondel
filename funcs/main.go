@@ -9,6 +9,10 @@ import (
 
 func InitDatabase(dbPath, dbName string) (path string, err error) {
 	path, err = templates.Template{}.Init(dbPath, dbName)
+	if err != nil {
+		return
+	}
+	err = templates.Template{}.GoFmtPath(dbPath + "/models/")
 	return
 }
 
