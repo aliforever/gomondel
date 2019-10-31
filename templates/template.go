@@ -155,7 +155,6 @@ func (t Template) CreateModel(projectPath, modelName string, modelIdType, parent
 			return
 		}
 	}
-	err = t.GoFmtCurrentPath()
 	return
 }
 
