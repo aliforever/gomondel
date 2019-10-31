@@ -49,7 +49,7 @@ func (t Template) Init(projectPath, dbName string) (path string, err error) {
 	path = fmt.Sprintf(ModelsPath, path) + "/init.go"
 	err = ioutil.WriteFile(path, []byte(fileString), os.ModePerm)
 	if err == nil {
-		err = t.GoFmtPath(fmt.Sprintf(ModelsPath, path))
+		err = t.GoFmtPath(fmt.Sprintf(ModelsPath, projectPath))
 	}
 	return
 }
