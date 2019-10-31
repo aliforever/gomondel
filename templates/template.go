@@ -181,6 +181,7 @@ func (t Template) GoFmtCurrentPath() (err error) {
 
 func (t Template) GoFmtPath(path string) (err error) {
 	// cmd := exec.Command("go", "fmt", path+"/", "./...")
+	fmt.Println("fmt path " + path)
 	cmd := exec.Command("go", "fmt", path+"/", "*")
 	var out bytes.Buffer
 	var stderr bytes.Buffer

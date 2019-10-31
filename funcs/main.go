@@ -12,7 +12,7 @@ func InitDatabase(dbPath, dbName string) (path string, err error) {
 	if err != nil {
 		return
 	}
-	err = templates.Template{}.GoFmtPath(dbPath + "/models")
+	err = templates.Template{}.GoFmtPath(dbPath + "/")
 	return
 }
 
@@ -21,7 +21,7 @@ func CreateModel(projectPath, modelName string, modelIdType, parentName, parentI
 	if err != nil {
 		return
 	}
-	err = templates.Template{}.GoFmtPath(projectPath + "/models")
+	err = templates.Template{}.GoFmtPath(projectPath + "/")
 	return
 }
 
