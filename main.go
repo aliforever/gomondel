@@ -1,9 +1,13 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
+	"os"
 	"strings"
+
+	"github.com/aliforever/gomondel/utils"
 
 	"github.com/aliforever/gomondel/funcs"
 	"github.com/aliforever/gomondel/templates"
@@ -21,13 +25,29 @@ func main() {
 		fmt.Println("You can't run init and model at the same time")
 		return
 	}
+	var err error
+	if path == "" {
+		path, err = utils.CurrentPath()
+		if err != nil {
+			fmt.Println("invalid path", path)
+			return
+		}
+	} else {
+		_, err = os.Stat(path)
+		if err != nil {
+			if os.IsNotExist(err) {
+				err = errors.New(fmt.Sprintf("Path %s does not exists", path))
+			}
+			return
+		}
+	}
 	if init != "" {
-		path, err := funcs.InitDatabase(path, init)
+		dbPath, err := funcs.InitDatabase(path, init)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Println(fmt.Sprintf("Database %s init file added in %s, don't forget to call InitMongoDB() in your main function", init, path))
+		fmt.Println(fmt.Sprintf("Database %s init file added in %s, don't forget to call InitMongoDB() in your main function", init, dbPath))
 		return
 	}
 	if model != "" {
@@ -58,17 +78,16 @@ func main() {
 				}
 				fieldName := splitFieldType[0]
 				fieldType := splitFieldType[1]
-				// fieldTag := fmt.Sprintf("`"+`bson:"%s"`+"`", flect.Underscore(fieldName))
 				m[fieldName] = fieldType
 			}
 			modelFields = funcs.MakeModelFieldsFromMap(m)
 		}
-		path, err := funcs.CreateModel(path, model, keyType, parent, parentIdType, modelFields)
+		modelPath, err := funcs.CreateModel(path, model, keyType, parent, parentIdType, modelFields)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Println(fmt.Sprintf("Model %s file added in %s", model, path))
+		fmt.Println(fmt.Sprintf("Model %s file added in %s", model, path+modelPath))
 		return
 	}
 }

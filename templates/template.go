@@ -9,6 +9,8 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/aliforever/gomondel/utils"
+
 	"github.com/go-errors/errors"
 
 	"github.com/gobuffalo/flect"
@@ -20,21 +22,6 @@ type Template struct {
 }
 
 func (t Template) Init(projectPath, dbName string) (path string, err error) {
-	if projectPath != "" {
-		path = projectPath
-		_, err = os.Stat(path)
-		if err != nil {
-			if os.IsNotExist(err) {
-				err = errors.New(fmt.Sprintf("Path %s does not exists", projectPath))
-			}
-			return
-		}
-	} else {
-		path, err = t.CurrentPath()
-		if err != nil {
-			return
-		}
-	}
 	fileString := t.init(dbName)
 	if _, err = os.Stat(fmt.Sprintf(ModelsPath, path)); err != nil {
 		if os.IsNotExist(err) {
@@ -49,7 +36,7 @@ func (t Template) Init(projectPath, dbName string) (path string, err error) {
 	path = fmt.Sprintf(ModelsPath, path) + "/init.go"
 	err = ioutil.WriteFile(path, []byte(fileString), os.ModePerm)
 	if err == nil {
-		err = t.GoFmtPath(fmt.Sprintf(ModelsPath, projectPath))
+		err = utils.GoFmtPath(fmt.Sprintf(ModelsPath, projectPath))
 	}
 	return
 }
@@ -66,21 +53,6 @@ func (t Template) getSignFromName(name string) (sign string) {
 }
 
 func (t Template) CreateModel(projectPath, modelName string, modelIdType, parentName, parentIdType *string, fields []ModelField) (path string, err error) {
-	if projectPath != "" {
-		path = projectPath
-		_, err = os.Stat(path)
-		if err != nil {
-			if os.IsNotExist(err) {
-				err = errors.New(fmt.Sprintf("Path %s does not exists", projectPath))
-			}
-			return
-		}
-	} else {
-		path, err = t.CurrentPath()
-		if err != nil {
-			return
-		}
-	}
 	fileName := flect.Singularize(modelName)
 	fileName = flect.Capitalize(fileName)
 	modelSign := t.getSignFromName(fileName)
@@ -161,7 +133,7 @@ func (t Template) CreateModel(projectPath, modelName string, modelIdType, parent
 func (t Template) GoFmtCurrentPath() (err error) {
 
 	var path string
-	path, err = t.CurrentPath()
+	path, err = utils.CurrentPath()
 	if err != nil {
 		return
 	}
@@ -173,30 +145,6 @@ func (t Template) GoFmtCurrentPath() (err error) {
 	err = cmd.Run()
 	if err != nil {
 		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-		return
-	}
-	return
-}
-
-func (t Template) GoFmtPath(path string) (err error) {
-	// cmd := exec.Command("go", "fmt", path+"/", "./...")
-	fmt.Println("fmt path " + path)
-	cmd := exec.Command("gofmt", "-w", path)
-	var out bytes.Buffer
-	var stderr bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &stderr
-	err = cmd.Run()
-	if err != nil {
-		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-		return
-	}
-	return
-}
-
-func (t Template) CurrentPath() (path string, err error) {
-	path, err = os.Getwd()
-	if err != nil {
 		return
 	}
 	return

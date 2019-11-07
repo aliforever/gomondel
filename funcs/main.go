@@ -3,6 +3,10 @@ package funcs
 import (
 	"fmt"
 
+	"github.com/aliforever/gomondel/utils"
+
+	"github.com/go-errors/errors"
+
 	"github.com/aliforever/gomondel/templates"
 	"github.com/gobuffalo/flect"
 )
@@ -12,7 +16,10 @@ func InitDatabase(dbPath, dbName string) (path string, err error) {
 	if err != nil {
 		return
 	}
-	err = templates.Template{}.GoFmtPath(dbPath + "/")
+	err = utils.GoFmtPath(dbPath + "/")
+	if err != nil {
+		err = errors.New("gofmt error on initializing database: " + err.Error())
+	}
 	return
 }
 
@@ -21,7 +28,7 @@ func CreateModel(projectPath, modelName string, modelIdType, parentName, parentI
 	if err != nil {
 		return
 	}
-	err = templates.Template{}.GoFmtPath(projectPath + "/")
+	err = utils.GoFmtPath(projectPath + "/")
 	return
 }
 
