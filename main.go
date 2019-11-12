@@ -87,7 +87,7 @@ func main() {
 			fmt.Println(err)
 			return
 		}
-		fmt.Println(fmt.Sprintf("Model %s file added in %s", model, path+modelPath))
+		fmt.Println(fmt.Sprintf("Model %s file added in %s", model, modelPath))
 		return
 	}
 }

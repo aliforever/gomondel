@@ -104,7 +104,7 @@ func (t Template) CreateModel(projectPath, modelName string, modelIdType, parent
 		}
 	}
 
-	path = fmt.Sprintf(ModelsPath, path) + "/" + strings.ToLower(fileName) + ".go"
+	path = fmt.Sprintf(ModelsPath, projectPath) + "/" + strings.ToLower(fileName) + ".go"
 
 	tableName := strings.ToLower(flect.Underscore(flect.Pluralize(fileName)))
 	fileString, err = TemplateData{}.FillModel(fileString, fileName, fileName, modelSign, "", modelKey, tableName, parentMethodStr, parentField, fields)
