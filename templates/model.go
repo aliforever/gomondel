@@ -44,7 +44,9 @@ import (
 
 type {{.ModelName}} struct {
 	{{.ModelId}} {{.ModelIdType}} ` + "`" + `bson:"_id,omitempty"` + "`" + `
-	{{- if .ParentField}}\n{{.ParentField}}{{end -}}
+	{{- if .ParentField}}
+	{{.ParentField}}
+	{{end -}}
 	{{if .ModelFields}}
 	{{- range $element := .ModelFields}}
 	{{$element.Name}} {{$element.Type}} {{$element.Tag -}}
