@@ -125,6 +125,7 @@ func (td TemplateData) FillParentChildMethods(content string, fileName, modelNam
 	td.ModelSign = modelSign
 	td.ParentModelSign = parentModelSign
 	td.ParentModelName = parentModelName
+	td.ParentModelNameSmall = strings.ToLower(parentModelName)
 	td.ModelIdType = modelIdType
 	if td.ModelIdType == "" {
 		td.ModelIdType = "primitive.ObjectID"

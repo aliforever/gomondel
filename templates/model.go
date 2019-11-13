@@ -19,7 +19,7 @@ return
 }
 
 func ({{.ParentModelSign}} {{.ParentModelName}}) {{.ModelNameChildPlural}}() ({{.ModelSign}}s []{{.ModelName}}, err error) {
-{{.ModelSign}}s, err = {{.ModelName}}{}.Find()
+{{.ModelSign}}s, err = {{.ModelName}}{}.FindWithFilter(bson.M{"{{.ParentModelNameSmall}}_id": {{.ParentModelSign}}.Id})
 return
 }
 

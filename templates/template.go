@@ -70,7 +70,7 @@ func (t Template) CreateModel(projectPath, modelName string, modelIdType, parent
 	parent := ""
 	parentModelName := ""
 	if parentName != nil {
-		parent = fmt.Sprintf(ModelsPath, path) + "/" + *parentName + ".go"
+		parent = fmt.Sprintf(ModelsPath, projectPath) + "/" + *parentName + ".go"
 		if _, err = os.Stat(parent); err != nil {
 			err = errors.New(fmt.Sprintf("%s %s", parent, err.Error()))
 			return
@@ -90,6 +90,9 @@ func (t Template) CreateModel(projectPath, modelName string, modelIdType, parent
 			}
 			parentChildMethods = t.parentChildMethods()
 			parentChildMethods, err = TemplateData{}.FillParentChildMethods(parentChildMethods, parent, modelName, modelSign, modelKey, parentModelSign, parentModelName)
+			if err != nil {
+				return
+			}
 		}
 	}
 	fileString := t.model()
