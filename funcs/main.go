@@ -2,6 +2,7 @@ package funcs
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/aliforever/gomondel/utils"
 
@@ -16,7 +17,7 @@ func InitDatabase(dbPath, dbName string) (path string, err error) {
 	if err != nil {
 		return
 	}
-	err = utils.GoFmtPath(dbPath + "/")
+	err = utils.GoFmtPath(dbPath + string(os.PathSeparator))
 	if err != nil {
 		err = errors.New("gofmt error on initializing database: " + err.Error())
 	}
@@ -28,7 +29,7 @@ func CreateModel(projectPath, modelName string, modelIdType, parentName, parentI
 	if err != nil {
 		return
 	}
-	err = utils.GoFmtPath(projectPath + "/")
+	err = utils.GoFmtPath(projectPath + string(os.PathSeparator))
 	return
 }
 

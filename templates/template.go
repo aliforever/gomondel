@@ -16,7 +16,7 @@ import (
 	"github.com/gobuffalo/flect"
 )
 
-var ModelsPath = "%s/models"
+var ModelsPath = "%s" + string(os.PathSeparator) + "models"
 
 type Template struct {
 }
@@ -33,7 +33,7 @@ func (t Template) Init(projectPath, dbName string) (path string, err error) {
 			return
 		}
 	}
-	path = fmt.Sprintf(ModelsPath, path) + "/init.go"
+	path = fmt.Sprintf(ModelsPath, projectPath) + string(os.PathSeparator) + "init.go"
 	err = ioutil.WriteFile(path, []byte(fileString), os.ModePerm)
 	if err == nil {
 		err = utils.GoFmtPath(fmt.Sprintf(ModelsPath, projectPath))
@@ -70,7 +70,7 @@ func (t Template) CreateModel(projectPath, modelName string, modelIdType, parent
 	parent := ""
 	parentModelName := ""
 	if parentName != nil {
-		parent = fmt.Sprintf(ModelsPath, projectPath) + "/" + *parentName + ".go"
+		parent = fmt.Sprintf(ModelsPath, projectPath) + string(os.PathSeparator) + *parentName + ".go"
 		if _, err = os.Stat(parent); err != nil {
 			err = errors.New(fmt.Sprintf("%s %s", parent, err.Error()))
 			return
@@ -107,7 +107,7 @@ func (t Template) CreateModel(projectPath, modelName string, modelIdType, parent
 		}
 	}
 
-	path = fmt.Sprintf(ModelsPath, projectPath) + "/" + strings.ToLower(fileName) + ".go"
+	path = fmt.Sprintf(ModelsPath, projectPath) + string(os.PathSeparator) + strings.ToLower(fileName) + ".go"
 
 	tableName := strings.ToLower(flect.Underscore(flect.Pluralize(fileName)))
 	fileString, err = TemplateData{}.FillModel(fileString, fileName, fileName, modelSign, "", modelKey, tableName, parentMethodStr, parentField, fields)
@@ -140,7 +140,7 @@ func (t Template) GoFmtCurrentPath() (err error) {
 	if err != nil {
 		return
 	}
-	cmd := exec.Command("go", "fmt", path+"/", "./...")
+	cmd := exec.Command("go", "fmt", path+string(os.PathSeparator), "./...")
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 	cmd.Stdout = &out
