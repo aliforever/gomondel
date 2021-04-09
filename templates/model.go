@@ -161,7 +161,7 @@ func ({{.ModelSign}} *{{.ModelName}}) Remove() (err error) {
 	return
 }
 
-func ({{.ModelSign}} {{.ModelName}}) RemoveCustom(query) (err error) {
+func ({{.ModelSign}} {{.ModelName}}) RemoveCustom(query bson.M) (err error) {
 	_, err = DB.Collection("{{.TableName}}").DeleteMany(NewContext(), query)
 	return
 }
