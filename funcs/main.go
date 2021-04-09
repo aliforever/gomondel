@@ -6,7 +6,7 @@ import (
 
 	"github.com/aliforever/gomondel/utils"
 
-	"github.com/go-errors/errors"
+	"errors"
 
 	"github.com/aliforever/gomondel/templates"
 	"github.com/gobuffalo/flect"

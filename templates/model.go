@@ -118,7 +118,7 @@ func ({{.ModelSign}} {{.ModelName}}) Count() (count int64, err error) {
 }
 
 func ({{.ModelSign}} {{.ModelName}}) CountWithFilter(filter bson.M) (count int64, err error) {
-	count, err = DB.Collection("{{.TableName}}").CountDocuments(NewContext(), bson.M{})
+	count, err = DB.Collection("{{.TableName}}").CountDocuments(NewContext(), filter)
 	return
 }
 
@@ -132,7 +132,7 @@ func ({{.ModelSign}} {{.ModelName}}) DistinctWithFilter(field string, filter bso
 }
 
 func ({{.ModelSign}} {{.ModelName}}) Distinct(field string, filter bson.M, options ...*options.DistinctOptions) (ids []primitive.ObjectID, err error) {
-	ids, err = {{.ModelSign}}.DistinctWithFilter(field, bson.M{}, options...)
+	ids, err = {{.ModelSign}}.DistinctWithFilter(field, filter, options...)
 	return
 }
 
@@ -151,8 +151,18 @@ func ({{.ModelSign}} *{{.ModelName}}) SaveField(field string, val interface{}) (
 	return
 }
 
+func ({{.ModelSign}} {{.ModelName}}) UpdateCustom(query bson.M, update bson.M) (err error) {
+	_, err = DB.Collection("{{.TableName}}").UpdateOne(NewContext(), query, bson.M{"$set": update})
+	return
+}
+
 func ({{.ModelSign}} *{{.ModelName}}) Remove() (err error) {
 	_, err = DB.Collection("{{.TableName}}").DeleteOne(NewContext(), bson.M{"_id": {{.ModelSign}}.Id})
+	return
+}
+
+func ({{.ModelSign}} {{.ModelName}}) RemoveCustom(query) (err error) {
+	_, err = DB.Collection("{{.TableName}}").DeleteMany(NewContext(), query)
 	return
 }
 

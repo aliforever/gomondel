@@ -11,7 +11,7 @@ import (
 
 	"github.com/aliforever/gomondel/utils"
 
-	"github.com/go-errors/errors"
+	"errors"
 
 	"github.com/gobuffalo/flect"
 )
